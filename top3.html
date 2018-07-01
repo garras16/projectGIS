@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Proyek GIS</title>
+	<style type="text/css">
+		html, body {
+			margin: 0px;
+			padding: 0px;
+		}
+		#map {
+			width: 100%;
+			height: 550px;
+		}
+	</style>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<h1 style="text-align: center;">Sistem Informasi Pesebaran Asal Mahasiswa Unila</h1>
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<a class="navbar-brand" href="index.html">Home</a>
+
+		  <!-- Links -->
+		  <ul class="navbar-nav">
+		  	<li class="nav-item">
+      			<a class="nav-link" href="geotop3.html">TOP 3</a>
+    		</li>
+		    <!-- Dropdown -->
+		    <li class="nav-item dropdown">
+		      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+		        Fakultas
+		      </a>
+		      <div class="dropdown-menu">
+		        <a class="dropdown-item" href="fmipa.html">FMIPA</a>
+		        <a class="dropdown-item" href="fkip.html">FKIP</a>
+		        <a class="dropdown-item" href="fisip.html">FISIP</a>
+		        <a class="dropdown-item" href="fp.html">FP</a>
+		        <a class="dropdown-item" href="ft.html">FT</a>
+		        <a class="dropdown-item" href="fh.html">FH</a>
+		        <a class="dropdown-item" href="fk.html">FK</a>
+		        <a class="dropdown-item" href="feb.html">FEB</a>
+		      </div>
+		    </li>
+		    <li class="nav-item">
+      			<a class="nav-link" href="about.html">About</a>
+    		</li>
+    		<li class="nav-item">
+  				<a class="nav-link" href="overlay.html">Unila</a>
+			</li>
+		  </ul>
+	</nav>
+
+	<div id="map"></div>
+	<!-- Inisial backend -->
+	<script src="https://www.gstatic.com/firebasejs/5.0.2/firebase.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCx0yZKvuXFS6QawkRgVvmSw_xL7eDS_4&callback=initMap"></script>
+
+    <script type="text/javascript">
+    	var map 	= null;
+    	var center 	= {lat: -3.527115, lng: 119.602667};
+    	var infowindow;
+		var config	= {
+			apiKey: "AIzaSyBgXABQsCuadDqXMXx4ak0x8JnyMQ8i2eI",
+			authDomain: "top3-704a4.firebaseapp.com",
+			databaseURL: "https://top3-704a4.firebaseio.com",
+			projectId: "top3-704a4",
+			storageBucket: "top3-704a4.appspot.com",
+			messagingSenderId: "303617191769"
+		};
+		firebase.initializeApp(config);
+
+	  	var db              = firebase.database();
+		var dataRef         = db.ref('top3');
+
+    	dataRef.on('value', showData, showError);
+    	function showData(data) {
+    		console.log(data.val());
+    		map.data.addGeoJson(data.val());
+    		map.data.setStyle({
+    			fillColor: '#f4c542',
+    			strokeWeight: 0.2
+    		});
+    		map.data.addListener('click', function(event){
+    			infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>'+'<br><b>Jumlah Mahasiswa : </b>'+event.feature.getProperty('MAHASISWA')+'<br><b>Jumlah Penduduk : </b>'+event.feature.getProperty('PENDUDUK')+'<br><b>Tren Pekerjaan : </b>'+event.feature.getProperty('PEKERJAAN')+'<br><b>Rata-rata Penghasilan : </b>'+event.feature.getProperty('PENGHASILAN');
+    			infowindow.setContent(infowindowcontent);
+    			infowindow.setPosition(event.latLng);
+    			infowindow.open(map);
+    		});
+    	}
+
+    	function showError(err) {
+    		console.log(err);
+    	}
+
+    	function initMap(){
+	    	map = new google.maps.Map(document.getElementById('map'),{
+	        	zoom:5,
+	        	center:center,
+	        	disableDefaultUI: true,
+	        	draggable: false,
+	        	maxZoom: 5,
+	        	minZoom: 5,
+	    	});
+	    	infowindow = new google.maps.InfoWindow();
+
+ 	   	}
+    </script>
+</body>
+</html>

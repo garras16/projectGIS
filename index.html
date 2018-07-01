@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Proyek GIS</title>
+	<style type="text/css">
+		html, body {
+			margin: 0px;
+			padding: 0px;
+		}
+		#map {
+			width: 100%;
+			height: 550px;
+		}
+	</style>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<h1 style="text-align: center;">Sistem Informasi Pesebaran Asal Mahasiswa Unila</h1>
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<a class="navbar-brand" href="index.html">Home</a>
+
+		  <!-- Links -->
+		  <ul class="navbar-nav">
+		  	<li class="nav-item">
+      			<a class="nav-link" href="top3.html">TOP 3</a>
+    		</li>
+		    <!-- Dropdown -->
+		    <li class="nav-item dropdown">
+		      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+		        Fakultas
+		      </a>
+		      <div class="dropdown-menu">
+		        <a class="dropdown-item" href="fmipa.html">FMIPA</a>
+		        <a class="dropdown-item" href="fkip.html">FKIP</a>
+		        <a class="dropdown-item" href="fisip.html">FISIP</a>
+		        <a class="dropdown-item" href="fp.html">FP</a>
+		        <a class="dropdown-item" href="ft.html">FT</a>
+		        <a class="dropdown-item" href="fh.html">FH</a>
+		        <a class="dropdown-item" href="fk.html">FK</a>
+		        <a class="dropdown-item" href="feb.html">FEB</a>
+		      </div>
+		    </li>
+		    <li class="nav-item">
+      			<a class="nav-link" href="about.html">About</a>
+    		</li>
+    		<li class="nav-item">
+      			<a class="nav-link" href="overlay.html">Unila</a>
+    		</li>
+    		<li class="nav-item">
+      			<form method="GET" action="index.html" style="margin-top: 5px; margin-left: 20px;">
+      				<input type="text" name="search" placeholder="Search data" style="padding: 0px 10px;">
+      			</form>
+    		</li>
+    		<li class="nav-item">
+      			<form method="GET" action="jarak.php" style="margin-top: 5px; margin-left: 20px;">
+      				<select name="destination" style="padding: 0px 10px;">
+      					<option value="bandara">Bandara Raden Intan</option>
+      					<option value="stasiun">Stasiun KAI Tj. Karang</option>
+      					<option value="pelabuhan">Pelabuhan Bakauheni</option>
+      					<option value="terminal">Terminal Rajabasa</option>
+      				</select>
+      				<input type="submit" value="Kalkulasi">
+      			</form>
+    		</li>
+		  </ul>
+	</nav>
+
+	<div id="map"></div>
+	<!-- Inisial backend -->
+	<script src="https://www.gstatic.com/firebasejs/5.0.1/firebase.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCx0yZKvuXFS6QawkRgVvmSw_xL7eDS_4&callback=initMap"></script>
+
+    <script type="text/javascript">
+    	var map 	= null;
+    	var center 	= {lat: -3.527115, lng: 119.602667};
+    	var infowindow;
+		var config	= {
+			apiKey: "AIzaSyDb3-PnKC_x8jhdHwXGQVpkmCTKAHtV11I", 
+			authDomain: "projectlagi-dead0.firebaseapp.com", 
+			databaseURL: "https://projectlagi-dead0.firebaseio.com", 
+			projectId: "projectlagi-dead0", 
+			storageBucket: "projectlagi-dead0.appspot.com", 
+			messagingSenderId: "278523219024"
+		};
+		firebase.initializeApp(config);
+
+		var alamat	= window.location.href;
+	  	var db              = firebase.database();
+		var dataRef         = db.ref('indonesia');
+    	dataRef.on('value', showData, showError);
+    	function showData(data) {
+    		console.log(data.val());
+    		map.data.addGeoJson(data.val());
+    		map.data.setStyle({
+    			fillColor: '#f4c542',
+    			strokeWeight: 0.2
+    		});
+
+    		map.data.addListener('click', function(event){
+    				if (alamat.search("penduduk") > 0) {
+    			infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>'+'<br><b>Jumlah Penduduk : </b>'+event.feature.getProperty('PENDUDUK');
+    				}else if(alamat.search("pekerjaan") > 0){
+    			infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>'+'<br><b>Tren Pekerjaan : </b>'+event.feature.getProperty('PEKERJAAN');
+    				}else if(alamat.search("mahasiswa") > 0){
+    			infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>'+'<br><b>Jumlah Mahasiswa : </b>'+event.feature.getProperty('MAHASISWA');
+    				}else if(alamat.search("penghasilan") > 0) {
+				infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>'+'<br><b>Rata-rata Penghasilan : </b>'+event.feature.getProperty('PENGHASILAN');
+				}else{
+					infowindowcontent = '<b>'+event.feature.getProperty('Propinsi')+'</b>';
+				}    			
+    			infowindow.setContent(infowindowcontent);
+    			infowindow.setPosition(event.latLng);
+    			infowindow.open(map);
+    		});
+    	}
+
+    	function showError(err) {
+    		console.log(err);
+    	}
+
+    	function initMap(){
+	    	map = new google.maps.Map(document.getElementById('map'),{
+	        	zoom:5,
+	        	center:center,
+	        	disableDefaultUI: true,
+	        	draggable: false,
+	        	maxZoom: 5,
+	        	minZoom: 5,
+	    	});
+	    	infowindow = new google.maps.InfoWindow();
+
+ 	   	}
+    </script>
+</body>
+</html>
